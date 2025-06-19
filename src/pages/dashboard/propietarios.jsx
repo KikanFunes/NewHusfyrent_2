@@ -256,35 +256,46 @@ const fetchPropietarios = async () => {
             setPropietarioSeleccionado(null);
           }}
           onGuardar={async (datosActualizados) => {
+            console.log("Datos a actualizar:", datosActualizados);
+
             const cuenta_bancaria = {
               banco: datosActualizados.banco,
-              tipo_cuenta: datosActualizados.tipoCuenta,
-              numero_cuenta: datosActualizados.numeroCuenta,
+                tipo_cuenta: datosActualizados.tipoCuenta,
+                numero_cuenta: datosActualizados.numeroCuenta,
             };
 
-            const { error } = await supabase
-              .from("propietarios")
-              .update({
-                nombre: datosActualizados.nombre,
-                correo: datosActualizados.correo,
-                telefono: datosActualizados.telefono,
-                rut_dni: datosActualizados.rut_dni || datosActualizados.rut || "",
-                cuenta_bancaria,
-                fecha_ingreso: datosActualizados.fechaIngreso,
-                notas: datosActualizados.notas,
-              })
-              .eq("id", datosActualizados.id);
+              console.log("Objeto que se enviará a Supabase:", {
+              nombre: datosActualizados.nombre,
+              rut_dni: datosActualizados.rut_dni || "",
+              correo: datosActualizados.correo,
+              telefono: datosActualizados.telefono,
+              cuenta_bancaria,
+              fecha_ingreso: datosActualizados.fechaIngreso,
+              notas: datosActualizados.notas,
+            });
 
-            if (error) {
-              console.error("Error actualizando propietario", error);
-              alert("Error al guardar los cambios.");
-              return false;
-            }
+          const { error } = await supabase
+            .from("propietarios")
+            .update({
+              nombre: datosActualizados.nombre,
+              rut_dni: datosActualizados.rut_dni || "",
+              correo: datosActualizados.correo,
+              telefono: datosActualizados.telefono,
+              cuenta_bancaria,
+              fecha_ingreso: datosActualizados.fechaIngreso,
+              notas: datosActualizados.notas,
+            })
+    .eq("id", datosActualizados.id);
 
-            // Refrescar la lista
-            await fetchPropietarios();
-            return true;
-          }}
+  if (error) {
+    console.error("Error al actualizar propietario en Supabase:", error);
+    alert("Error al guardar los cambios.");
+    return false;
+  }
+
+  await fetchPropietarios();
+  return true;
+}}
         />
       )}
     </div>
