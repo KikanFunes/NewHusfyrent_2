@@ -30,11 +30,24 @@ export function Propiedades() {
   });
   const [listaPropietarios, setListaPropietarios] = useState([]);
   const [mostrarModalPropietario, setMostrarModalPropietario] = useState(false);
+  
+  // Estado para el Select con renderizado forzado
+  const [selectedPropietarioId, setSelectedPropietarioId] = useState("");
+  const [forceRerender, setForceRerender] = useState(0);
 
   useEffect(() => {
     fetchPropiedades();
     fetchPropietarios();
   }, []);
+
+  useEffect(() => {
+    if (selectedPropietarioId !== nuevaPropiedad.propietario_id) {
+      setNuevaPropiedad(prev => ({
+        ...prev,
+        propietario_id: selectedPropietarioId
+      }));
+    }
+  }, [selectedPropietarioId]);
 
   const fetchPropiedades = async () => {
     const { data, error } = await supabase.from("propiedades").select("*");
@@ -80,12 +93,12 @@ export function Propiedades() {
         nombre,
         direccion,
         tipo,
-        dormitorios: parseInt(dormitorios),
-        banos: parseInt(banos),
-        superficie: parseFloat(superficie),
-        propietario_id,
-        valor_arriendo: parseInt(valor_arriendo),
-        comision: parseFloat(comision),
+        dormitorios: parseInt(dormitorios) || null,
+        banos: parseInt(banos) || null,
+        superficie: parseFloat(superficie) || null,
+        propietario_id: propietario_id || null,
+        valor_arriendo: parseInt(valor_arriendo) || null,
+        comision: parseFloat(comision) || null,
         fecha_ingreso,
         notas,
       },
@@ -95,6 +108,8 @@ export function Propiedades() {
       alert("Error al agregar propiedad");
       console.error(error);
     } else {
+      // Reset con forzado de re-render
+      setSelectedPropietarioId("");
       setNuevaPropiedad({
         nombre: "",
         direccion: "",
@@ -108,8 +123,20 @@ export function Propiedades() {
         fecha_ingreso: "",
         notas: "",
       });
+      setForceRerender(prev => prev + 1);
       fetchPropiedades();
     }
+  };
+
+  // Función para manejar la selección con setTimeout
+  const handlePropietarioChange = (val) => {
+    // Actualizar inmediatamente
+    setSelectedPropietarioId(val || "");
+    
+    // Forzar re-render después de un pequeño delay
+    setTimeout(() => {
+      setForceRerender(prev => prev + 1);
+    }, 10);
   };
 
   return (
@@ -125,7 +152,6 @@ export function Propiedades() {
           onChange={(e) => setNuevaPropiedad({ ...nuevaPropiedad, nombre: e.target.value })}
         />
 
-        {/* Dirección con botón para ver en Google Maps */}
         <div className="flex gap-2">
           <Input
             label="Dirección"
@@ -149,7 +175,6 @@ export function Propiedades() {
           </Button>
         </div>
 
-        {/* Tipo de propiedad */}
         <Select
           label="Tipo de Propiedad"
           value={nuevaPropiedad.tipo}
@@ -166,36 +191,29 @@ export function Propiedades() {
           <Option value="Otro">Otro</Option>
         </Select>
 
-        {/* Selección de propietario */}
         <div className="flex gap-2 items-end">
-  <div className="flex-1">
-   <Select
-  label="Propietario"
-  value={String(nuevaPropiedad.propietario_id || "")}
-  onChange={(val) => {
-    if (val) {
-      setNuevaPropiedad((prev) => ({
-        ...prev,
-        propietario_id: String(val),
-      }));
-    }
-  }}
->
-  {listaPropietarios.map((p) => (
-    <Option key={p.id} value={String(p.id)}>
-      {p.nombre}
-    </Option>
-  ))}
-</Select>
-  </div>
-  <Button
-    onClick={() => setMostrarModalPropietario(true)}
-    color="green"
-    className="mt-1"
-  >
-    +
-  </Button>
-</div>
+          <div className="flex-1">
+            <Select
+              key={`propietario-${forceRerender}`}
+              label="Propietario"
+              value={selectedPropietarioId}
+              onChange={handlePropietarioChange}
+            >
+              {listaPropietarios.map((propietario) => (
+                <Option key={propietario.id} value={propietario.id}>
+                  {propietario.nombre}
+                </Option>
+              ))}
+            </Select>
+          </div>
+          <Button
+            onClick={() => setMostrarModalPropietario(true)}
+            color="green"
+            className="mt-1"
+          >
+            +
+          </Button>
+        </div>
 
         <Input
           label="Dormitorios"
@@ -262,12 +280,7 @@ export function Propiedades() {
         open={mostrarModalPropietario}
         onClose={() => setMostrarModalPropietario(false)}
         onAgregado={() => {
-          supabase
-            .from("propietarios")
-            .select("id, nombre")
-            .then(({ data, error }) => {
-              if (!error) setListaPropietarios(data);
-            });
+          fetchPropietarios();
         }}
       />
     </div>
