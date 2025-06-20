@@ -1,4 +1,3 @@
-// src/components/ModalEditarPropietario.jsx
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -7,11 +6,14 @@ import {
   DialogFooter,
   Input,
   Button,
+  Select,
+  Option,
 } from "@material-tailwind/react";
 import { supabase } from "../lib/supabase";
 
 const ModalEditarPropietario = ({ open, onClose, propietario, onGuardar }) => {
   const [datos, setDatos] = useState({
+    id: "",
     nombre: "",
     rut_dni: "",
     correo: "",
@@ -25,6 +27,7 @@ const ModalEditarPropietario = ({ open, onClose, propietario, onGuardar }) => {
 
   useEffect(() => {
     if (propietario) {
+      console.log("🔍 Propietario recibido en modal:", propietario);
       setDatos({
         id: propietario.id,
         nombre: propietario.nombre || "",
@@ -42,17 +45,33 @@ const ModalEditarPropietario = ({ open, onClose, propietario, onGuardar }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setDatos({ ...datos, [name]: value });
+    setDatos((prevDatos) => ({
+      ...prevDatos,
+      [name]: value,
+    }));
   };
 
-    const handleGuardar = async () => {
-        if (onGuardar) {
-         const exito = await onGuardar(datos);
-         if (exito) {
-            onClose();
-         }
-        }
-    };
+  const handleGuardar = async () => {
+    if (!datos.nombre?.trim()) {
+      alert("El nombre es obligatorio");
+      return;
+    }
+
+    if (!datos.id) {
+      console.error("❌ No hay ID del propietario");
+      alert("Error: No se puede identificar el propietario");
+      return;
+    }
+
+    console.log("📤 Datos que se enviarán:", datos);
+
+    if (onGuardar) {
+      const exito = await onGuardar(datos);
+      if (exito) {
+        onClose();
+      }
+    }
+  };
 
   return (
     <Dialog open={open} handler={onClose}>
@@ -62,53 +81,42 @@ const ModalEditarPropietario = ({ open, onClose, propietario, onGuardar }) => {
         <Input label="RUT/DNI" name="rut_dni" value={datos.rut_dni} onChange={handleChange} />
         <Input label="Correo" name="correo" value={datos.correo} onChange={handleChange} />
         <Input label="Teléfono" name="telefono" value={datos.telefono} onChange={handleChange} />
-        <div>
-            <label className="text-sm font-medium text-blue-gray-700 mb-1 block">
-                Banco
-            </label>
-            <select
-                name="banco"
-                value={datos.banco || ""}
-                onChange={handleChange}
-                className="border border-blue-gray-200 rounded-md p-2 w-full"
-            >
-                <option value="">Selecciona un banco</option>
-                <option value="Banco de Chile">Banco de Chile</option>
-                <option value="Banco BCI">Banco BCI</option>
-                <option value="Banco Estado">Banco Estado</option>
-                <option value="Banco Santander">Banco Santander</option>
-                <option value="Banco Itaú">Banco Itaú</option>
-                <option value="Banco Falabella">Banco Falabella</option>
-                <option value="Scotiabank">Scotiabank</option>
-                <option value="Banco Bice">Banco Bice</option>
-                <option value="Banco Internacional">Banco Internacional</option>
-                <option value="Banco Consorcio">Banco Consorcio</option>
-                <option value="Banco Ripley">Banco Ripley</option>
-                <option value="HSBC">HSBC</option>
-                <option value="Tenpo">Tenpo</option>
-                <option value="Mercado Pago">Mercado Pago</option>
-                <option value="Tapp Caja Los Andes">Tapp Caja Los Andes</option>
-                <option value="Otro">Otro</option>
-            </select>
-        </div>
-        <div>
-            <label className="text-sm font-medium text-blue-gray-700 mb-1 block">
-                Tipo de Cuenta
-            </label>
-            <select
-                name="tipoCuenta"
-                value={datos.tipoCuenta || ""}
-                onChange={handleChange}
-                className="border border-blue-gray-200 rounded-md p-2 w-full"
-            >
-                <option value="">Selecciona una opción</option>
-                <option value="Cuenta Corriente">Cuenta Corriente</option>
-                <option value="Cuenta Vista">Cuenta Vista</option>
-                <option value="Cuenta Ahorro">Cuenta Ahorro</option>
-                <option value="Cuenta RUT">Cuenta RUT</option>
-                <option value="Otra">Otra</option>
-            </select>
-        </div>
+
+        <Select
+          label="Banco"
+          value={datos.banco}
+          onChange={(val) => setDatos({ ...datos, banco: val })}
+        >
+          <Option value="Banco de Chile">Banco de Chile</Option>
+          <Option value="Banco BCI">Banco BCI</Option>
+          <Option value="Banco Estado">Banco Estado</Option>
+          <Option value="Banco Santander">Banco Santander</Option>
+          <Option value="Banco Itaú">Banco Itaú</Option>
+          <Option value="Banco Falabella">Banco Falabella</Option>
+          <Option value="Scotiabank">Scotiabank</Option>
+          <Option value="Banco Bice">Banco Bice</Option>
+          <Option value="Banco Internacional">Banco Internacional</Option>
+          <Option value="Banco Consorcio">Banco Consorcio</Option>
+          <Option value="Banco Ripley">Banco Ripley</Option>
+          <Option value="HSBC">HSBC</Option>
+          <Option value="Tenpo">Tenpo</Option>
+          <Option value="Mercado Pago">Mercado Pago</Option>
+          <Option value="Tapp Caja Los Andes">Tapp Caja Los Andes</Option>
+          <Option value="Otro">Otro</Option>
+        </Select>
+
+        <Select
+          label="Tipo de Cuenta"
+          value={datos.tipoCuenta}
+          onChange={(val) => setDatos({ ...datos, tipoCuenta: val })}
+        >
+          <Option value="Cuenta Corriente">Cuenta Corriente</Option>
+          <Option value="Cuenta Vista">Cuenta Vista</Option>
+          <Option value="Cuenta Ahorro">Cuenta Ahorro</Option>
+          <Option value="Cuenta RUT">Cuenta RUT</Option>
+          <Option value="Otra">Otra</Option>
+        </Select>
+
         <Input label="Número de Cuenta" name="numeroCuenta" value={datos.numeroCuenta} onChange={handleChange} />
         <Input label="Fecha de Ingreso" type="date" name="fechaIngreso" value={datos.fechaIngreso} onChange={handleChange} />
         <Input label="Notas" name="notas" value={datos.notas} onChange={handleChange} />

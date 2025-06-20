@@ -36,19 +36,24 @@ export function Propietarios() {
   const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
   const [propietarioSeleccionado, setPropietarioSeleccionado] = useState(null);
 
-  // 🔁 Esto va fuera del useEffect
-const fetchPropietarios = async () => {
-  const { data, error } = await supabase.from("propietarios").select("*");
-  if (error) {
-    console.error("Error al obtener propietarios:", error.message);
-  } else {
-    setPropietarios(data);
-  }
-  setLoading(false);
-};
+  // Función para obtener propietarios
+  const fetchPropietarios = async () => {
+    try {
+      const { data, error } = await supabase.from("propietarios").select("*");
+      if (error) {
+        console.error("Error al obtener propietarios:", error.message);
+      } else {
+        console.log("Propietarios obtenidos:", data);
+        setPropietarios(data);
+      }
+    } catch (e) {
+      console.error("Error inesperado al obtener propietarios:", e);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-  fetchPropietarios();
+    fetchPropietarios();
   }, []);
 
   const handleAgregarPropietario = async () => {
@@ -103,8 +108,7 @@ const fetchPropietarios = async () => {
         notas: "",
       });
 
-      const { data } = await supabase.from("propietarios").select("*");
-      setPropietarios(data);
+      await fetchPropietarios();
     }
   };
 
@@ -114,9 +118,9 @@ const fetchPropietarios = async () => {
   };
 
   const handleEditar = (propietario) => {
-  setPropietarioSeleccionado(propietario);
-  setMostrarModalEditar(true);
-};
+    setPropietarioSeleccionado(propietario);
+    setMostrarModalEditar(true);
+  };
 
   return (
     <div className="p-6">
@@ -125,10 +129,26 @@ const fetchPropietarios = async () => {
       </Typography>
 
       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input label="Nombre" value={nuevoPropietario.nombre} onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, nombre: e.target.value })} />
-        <Input label="RUT o DNI" value={nuevoPropietario.rut_dni} onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, rut_dni: e.target.value })} />
-        <Input label="Correo" value={nuevoPropietario.correo} onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, correo: e.target.value })} />
-        <Input label="Teléfono" value={nuevoPropietario.telefono} onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, telefono: e.target.value })} />
+        <Input 
+          label="Nombre" 
+          value={nuevoPropietario.nombre} 
+          onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, nombre: e.target.value })} 
+        />
+        <Input 
+          label="RUT o DNI" 
+          value={nuevoPropietario.rut_dni} 
+          onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, rut_dni: e.target.value })} 
+        />
+        <Input 
+          label="Correo" 
+          value={nuevoPropietario.correo} 
+          onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, correo: e.target.value })} 
+        />
+        <Input 
+          label="Teléfono" 
+          value={nuevoPropietario.telefono} 
+          onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, telefono: e.target.value })} 
+        />
         <div>
           <Select
             label="Banco"
@@ -168,12 +188,31 @@ const fetchPropietarios = async () => {
             <Option value="Cuenta Ahorro">Cuenta Ahorro</Option>
             <Option value="Cuenta RUT">Cuenta RUT</Option>
             <Option value="Otra">Otra</Option>
-        </Select>
+          </Select>
         </div>
-        <Input label="Número de Cuenta" value={nuevoPropietario.numeroCuenta} onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, numeroCuenta: e.target.value })} />
-        <Input type="date" label="Fecha de Ingreso" value={nuevoPropietario.fechaIngreso} onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, fechaIngreso: e.target.value })} />
-        <Input label="Notas" value={nuevoPropietario.notas} onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, notas: e.target.value })} />
-        <Button onClick={handleAgregarPropietario} color="blue" className="md:col-span-2">Agregar Propietario</Button>
+        <Input 
+          label="Número de Cuenta" 
+          value={nuevoPropietario.numeroCuenta} 
+          onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, numeroCuenta: e.target.value })} 
+        />
+        <Input 
+          type="date" 
+          label="Fecha de Ingreso" 
+          value={nuevoPropietario.fechaIngreso} 
+          onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, fechaIngreso: e.target.value })} 
+        />
+        <Input 
+          label="Notas" 
+          value={nuevoPropietario.notas} 
+          onChange={(e) => setNuevoPropietario({ ...nuevoPropietario, notas: e.target.value })} 
+        />
+        <Button 
+          onClick={handleAgregarPropietario} 
+          color="blue" 
+          className="md:col-span-2"
+        >
+          Agregar Propietario
+        </Button>
       </div>
 
       {loading ? (
@@ -201,11 +240,14 @@ const fetchPropietarios = async () => {
                         <td className="p-4 border-b border-blue-gray-50">{prop.correo}</td>
                         <td className="p-4 border-b border-blue-gray-50">{prop.telefono}</td>
                         <td className="p-4 border-b border-blue-gray-50 space-x-2">
-                          <Button size="sm" onClick={() => verDetalles(prop)}>Ver más</Button>
+                          <Button size="sm" onClick={() => verDetalles(prop)}>
+                            Ver más
+                          </Button>
                           <Button
                             size="sm"
                             color="amber"
                             onClick={() => {
+                              console.log("Propietario seleccionado para editar:", prop);
                               setPropietarioSeleccionado(prop);
                               setMostrarModalEditar(true);
                             }}
@@ -248,56 +290,110 @@ const fetchPropietarios = async () => {
       )}
 
       {mostrarModalEditar && propietarioSeleccionado && (
-        <ModalEditarPropietario
-          open={mostrarModalEditar}
-          propietario={propietarioSeleccionado}
-          onClose={() => {
-            setMostrarModalEditar(false);
-            setPropietarioSeleccionado(null);
-          }}
-          onGuardar={async (datosActualizados) => {
-            console.log("Datos a actualizar:", datosActualizados);
+  <ModalEditarPropietario
+    open={mostrarModalEditar}
+    propietario={propietarioSeleccionado}
+    onClose={() => {
+      setMostrarModalEditar(false);
+      setPropietarioSeleccionado(null);
+    }}
+    onGuardar={async (datosActualizados) => {
+  console.log("=== INICIO PROCESO DE ACTUALIZACIÓN ===");
+  console.log("🆔 ID recibido:", datosActualizados.id);
+  console.log("🔍 Tipo del ID:", typeof datosActualizados.id);
+  console.log("📋 Datos completos:", datosActualizados);
 
-            const cuenta_bancaria = {
-              banco: datosActualizados.banco,
-                tipo_cuenta: datosActualizados.tipoCuenta,
-                numero_cuenta: datosActualizados.numeroCuenta,
-            };
+  try {
+    // PASO 1: Verificar que el registro existe
+    console.log("🔍 PASO 1: Verificando existencia del registro...");
+    const { data: registroExistente, error: errorBusqueda } = await supabase
+      .from("propietarios")
+      .select("*")
+      .eq("id", datosActualizados.id);
 
-              console.log("Objeto que se enviará a Supabase:", {
-              nombre: datosActualizados.nombre,
-              rut_dni: datosActualizados.rut_dni || "",
-              correo: datosActualizados.correo,
-              telefono: datosActualizados.telefono,
-              cuenta_bancaria,
-              fecha_ingreso: datosActualizados.fechaIngreso,
-              notas: datosActualizados.notas,
-            });
+    console.log("📊 Resultado de búsqueda:", registroExistente);
+    console.log("❌ Error de búsqueda:", errorBusqueda);
 
-          const { error } = await supabase
-            .from("propietarios")
-            .update({
-              nombre: datosActualizados.nombre,
-              rut_dni: datosActualizados.rut_dni || "",
-              correo: datosActualizados.correo,
-              telefono: datosActualizados.telefono,
-              cuenta_bancaria,
-              fecha_ingreso: datosActualizados.fechaIngreso,
-              notas: datosActualizados.notas,
-            })
-    .eq("id", datosActualizados.id);
+    if (errorBusqueda) {
+      console.error("Error al buscar el registro:", errorBusqueda);
+      return false;
+    }
 
-  if (error) {
-    console.error("Error al actualizar propietario en Supabase:", error);
-    alert("Error al guardar los cambios.");
+    if (!registroExistente || registroExistente.length === 0) {
+      console.error("❌ El registro no existe");
+      alert("Error: El propietario no existe en la base de datos");
+      return false;
+    }
+
+    console.log("✅ Registro encontrado:", registroExistente[0]);
+
+    // PASO 2: Preparar datos para actualización
+    const cuenta_bancaria = {
+      banco: datosActualizados.banco || null,
+      tipo_cuenta: datosActualizados.tipoCuenta || null,
+      numero_cuenta: datosActualizados.numeroCuenta || null
+    };
+
+    const actualizacion = {
+      nombre: datosActualizados.nombre,
+      rut_dni: datosActualizados.rut_dni || null,
+      correo: datosActualizados.correo || null,
+      telefono: datosActualizados.telefono || null,
+      cuenta_bancaria,
+      fecha_ingreso: datosActualizados.fechaIngreso || null,
+      notas: datosActualizados.notas || null
+    };
+
+    console.log("📦 PASO 2: Objeto de actualización:", actualizacion);
+
+    // PASO 3: Ejecutar actualización SIN .select() y SIN .single()
+    console.log("🔄 PASO 3: Ejecutando actualización...");
+    const { data, error, status, statusText } = await supabase
+      .from("propietarios")
+      .update(actualizacion)
+      .eq("id", datosActualizados.id);
+
+    console.log("📊 Resultado de actualización:");
+    console.log("- Data:", data);
+    console.log("- Error:", error);
+    console.log("- Status:", status);
+    console.log("- StatusText:", statusText);
+
+    if (error) {
+      console.error("❌ Error al actualizar:", error);
+      return false;
+    }
+
+    // PASO 4: Verificar que se actualizó
+    console.log("🔍 PASO 4: Verificando actualización...");
+    const { data: registroActualizado, error: errorVerificacion } = await supabase
+      .from("propietarios")
+      .select("*")
+      .eq("id", datosActualizados.id)
+      .single();
+
+    console.log("📊 Registro después de actualización:", registroActualizado);
+    console.log("❌ Error de verificación:", errorVerificacion);
+
+    if (errorVerificacion) {
+      console.error("Error al verificar actualización:", errorVerificacion);
+      // Pero continuamos porque el UPDATE pudo haber funcionado
+    }
+
+    // PASO 5: Refrescar tabla y cerrar modal
+    console.log("🔄 PASO 5: Refrescando datos...");
+    await fetchPropietarios();
+    
+    console.log("✅ Proceso completado exitosamente");
+    return true;
+
+  } catch (error) {
+    console.error("💥 Error general en el proceso:", error);
     return false;
   }
-
-  await fetchPropietarios();
-  return true;
 }}
-        />
-      )}
+  />
+)}
     </div>
   );
 }

@@ -6,6 +6,8 @@ import {
   Button,
   Card,
   CardBody,
+  Select,
+  Option,
 } from "@material-tailwind/react";
 import { supabase } from "../../lib/supabase";
 import ModalAgregarPropietario from "@/components/ModalAgregarPropietario";
@@ -45,9 +47,7 @@ export function Propiedades() {
   };
 
   const fetchPropietarios = async () => {
-    const { data, error } = await supabase
-      .from("propietarios")
-      .select("id, nombre");
+    const { data, error } = await supabase.from("propietarios").select("id, nombre");
     if (error) {
       console.error("Error al obtener propietarios:", error.message);
     } else {
@@ -122,9 +122,7 @@ export function Propiedades() {
         <Input
           label="Nombre o identificador de la Propiedad"
           value={nuevaPropiedad.nombre}
-          onChange={(e) =>
-            setNuevaPropiedad({ ...nuevaPropiedad, nombre: e.target.value })
-          }
+          onChange={(e) => setNuevaPropiedad({ ...nuevaPropiedad, nombre: e.target.value })}
         />
 
         {/* Dirección con botón para ver en Google Maps */}
@@ -132,12 +130,7 @@ export function Propiedades() {
           <Input
             label="Dirección"
             value={nuevaPropiedad.direccion}
-            onChange={(e) =>
-              setNuevaPropiedad({
-                ...nuevaPropiedad,
-                direccion: e.target.value,
-              })
-            }
+            onChange={(e) => setNuevaPropiedad({ ...nuevaPropiedad, direccion: e.target.value })}
             className="flex-1"
           />
           <Button
@@ -156,118 +149,94 @@ export function Propiedades() {
           </Button>
         </div>
 
-        {/* Tipo de propiedad como select */}
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-blue-gray-700">
-            Tipo de Propiedad
-          </label>
-          <select
-            value={nuevaPropiedad.tipo}
-            onChange={(e) =>
-              setNuevaPropiedad({ ...nuevaPropiedad, tipo: e.target.value })
-            }
-            className="border border-blue-gray-200 rounded-md p-2"
-          >
-            <option value="">Selecciona un tipo</option>
-            <option value="Departamento">Departamento</option>
-            <option value="Casa">Casa</option>
-            <option value="Estacionamiento">Estacionamiento</option>
-            <option value="Bodega">Bodega</option>
-            <option value="Local">Local</option>
-            <option value="Parcela">Parcela</option>
-            <option value="Galpón">Galpón</option>
-            <option value="Lote">Lote</option>
-            <option value="Otro">Otro</option>
-          </select>
-        </div>
+        {/* Tipo de propiedad */}
+        <Select
+          label="Tipo de Propiedad"
+          value={nuevaPropiedad.tipo}
+          onChange={(val) => setNuevaPropiedad({ ...nuevaPropiedad, tipo: val })}
+        >
+          <Option value="Departamento">Departamento</Option>
+          <Option value="Casa">Casa</Option>
+          <Option value="Estacionamiento">Estacionamiento</Option>
+          <Option value="Bodega">Bodega</Option>
+          <Option value="Local">Local</Option>
+          <Option value="Parcela">Parcela</Option>
+          <Option value="Galpón">Galpón</Option>
+          <Option value="Lote">Lote</Option>
+          <Option value="Otro">Otro</Option>
+        </Select>
 
-        {/* Selección de propietario y botón para agregar */}
-        <div className="flex flex-col md:flex-row md:items-end gap-2">
-          <div className="flex-1">
-            <label className="text-sm font-medium text-blue-gray-700">
-              Propietario
-            </label>
-            <select
-              value={nuevaPropiedad.propietario_id}
-              onChange={(e) =>
-                setNuevaPropiedad({
-                  ...nuevaPropiedad,
-                  propietario_id: e.target.value,
-                })
-              }
-              className="border border-blue-gray-200 rounded-md p-2 w-full"
-            >
-              <option value="">Seleccionar propietario</option>
-              {listaPropietarios.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-          <Button
-            onClick={() => setMostrarModalPropietario(true)}
-            color="green"
-            className="mt-1"
-          >
-            +
-          </Button>
-        </div>
+        {/* Selección de propietario */}
+        <div className="flex gap-2 items-end">
+  <div className="flex-1">
+   <Select
+  label="Propietario"
+  value={String(nuevaPropiedad.propietario_id || "")}
+  onChange={(val) => {
+    if (val) {
+      setNuevaPropiedad((prev) => ({
+        ...prev,
+        propietario_id: String(val),
+      }));
+    }
+  }}
+>
+  {listaPropietarios.map((p) => (
+    <Option key={p.id} value={String(p.id)}>
+      {p.nombre}
+    </Option>
+  ))}
+</Select>
+  </div>
+  <Button
+    onClick={() => setMostrarModalPropietario(true)}
+    color="green"
+    className="mt-1"
+  >
+    +
+  </Button>
+</div>
 
         <Input
           label="Dormitorios"
           type="number"
           value={nuevaPropiedad.dormitorios}
-          onChange={(e) =>
-            setNuevaPropiedad({ ...nuevaPropiedad, dormitorios: e.target.value })
-          }
+          onChange={(e) => setNuevaPropiedad({ ...nuevaPropiedad, dormitorios: e.target.value })}
         />
         <Input
           label="Baños"
           type="number"
           value={nuevaPropiedad.banos}
-          onChange={(e) =>
-            setNuevaPropiedad({ ...nuevaPropiedad, banos: e.target.value })
-          }
+          onChange={(e) => setNuevaPropiedad({ ...nuevaPropiedad, banos: e.target.value })}
         />
         <Input
           label="Superficie (m²)"
           type="number"
           value={nuevaPropiedad.superficie}
-          onChange={(e) =>
-            setNuevaPropiedad({ ...nuevaPropiedad, superficie: e.target.value })
-          }
+          onChange={(e) => setNuevaPropiedad({ ...nuevaPropiedad, superficie: e.target.value })}
         />
         <Input
           label="Valor Arriendo"
           type="number"
           value={nuevaPropiedad.valor_arriendo}
-          onChange={(e) =>
-            setNuevaPropiedad({ ...nuevaPropiedad, valor_arriendo: e.target.value })
-          }
+          onChange={(e) => setNuevaPropiedad({ ...nuevaPropiedad, valor_arriendo: e.target.value })}
         />
         <Input
           label="Comisión (%)"
           type="number"
           value={nuevaPropiedad.comision}
-          onChange={(e) =>
-            setNuevaPropiedad({ ...nuevaPropiedad, comision: e.target.value })
-          }
+          onChange={(e) => setNuevaPropiedad({ ...nuevaPropiedad, comision: e.target.value })}
         />
         <Input
           label="Fecha de Ingreso"
           type="date"
           value={nuevaPropiedad.fecha_ingreso}
-          onChange={(e) =>
-            setNuevaPropiedad({ ...nuevaPropiedad, fecha_ingreso: e.target.value })
-          }
+          onChange={(e) => setNuevaPropiedad({ ...nuevaPropiedad, fecha_ingreso: e.target.value })}
         />
         <Input
           label="Notas"
           value={nuevaPropiedad.notas}
-          onChange={(e) =>
-            setNuevaPropiedad({ ...nuevaPropiedad, notas: e.target.value })
-          }
+          onChange={(e) => setNuevaPropiedad({ ...nuevaPropiedad, notas: e.target.value })}
         />
 
         <Button onClick={handleAgregarPropiedad} color="blue" className="md:col-span-2">
